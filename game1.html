@@ -1,0 +1,105 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>color hit</title>
+    <script src="phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 0 },
+                debug: false
+            }
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+    let game = new Phaser.Game(config);
+    let circle;
+    let dot;
+    let group;   
+    let arrowHit =  false;
+    let tempCircle;
+    
+
+    function preload ()
+    {
+        this.load.image('circle', 'assets/circle.png');
+        this.load.image('dot', 'assets/dot.png');
+    }
+
+    function create ()
+    {    
+        group = this.add.group();    
+        
+        tempCircle = new Phaser.Geom.Circle(400, 200, 110);
+        //var graphics = this.add.graphics({ lineStyle: { color: 0xff0000 } });
+        //graphics.strokeCircleShape(tempCircle);
+        //circle = group.create(400, 100, 'circle');   
+
+        //group.create(tempCircle.x + tempCircle.radius + 10, 200, 'dot');        
+        circle = this.physics.add.staticImage(400, 200, 'circle');
+        dot = this.physics.add.image(400, 500, 'dot');
+
+        
+        dot.body.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true);
+        //group.create(tempCircle.x + tempCircle.radius + 10, 200, 'dot');   
+        //  Input Events
+        cursors = this.input.keyboard.createCursorKeys();
+
+            
+
+        //colliders        
+        this.physics.add.collider(dot, circle, null, collisionHandler, this);
+    }
+
+    function update ()
+    {
+       circle.rotation += 0.01;
+       this.physics.world.collide(dot, [ circle ]);
+       //arrow.rotation += 0.02;
+       Phaser.Actions.RotateAround(group.getChildren(), { x: 400, y: 200 }, 0.01);
+
+       if (cursors.up.isDown)
+        {
+            dot.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true).setGravityY(-600);
+        }
+
+        if(arrowHit) {  
+            group.create(tempCircle.x , tempCircle.y + tempCircle.radius, 'dot'); 
+            dot = this.physics.add.image(400, 500, 'dot');
+            dot.body.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true);
+            this.physics.add.collider(dot, circle, null, collisionHandler, this);
+            arrowHit=false;  
+        }
+    }
+
+
+    function collisionHandler(dot, tempCircle) {
+       dot.destroy();
+       arrowHit = true
+    }
+
+    
+</script>
+
+</body>
+</html>
