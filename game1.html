@@ -34,16 +34,25 @@
 
     let game = new Phaser.Game(config);
     let circle;
+    //let circleShine;
     let dot;
     let group;   
     let arrowHit =  false;
     let tempCircle;
+    let circlePartWhite1;
+    var circlePartWhite2;
+    let rotationSpeed = 0.01;
     
+    let dotColor = Phaser.Math.RND.between(0,1);
+    let yellowColor = Phaser.Display.Color.ValueToColor('rgb(250, 196, 15)');
 
     function preload ()
     {
+        this.load.image('circle_bg', 'assets/circle_bg.png');
         this.load.image('circle', 'assets/circle.png');
-        this.load.image('dot', 'assets/dot.png');
+        this.load.image('circle_shine', 'assets/circle_shine.png');        
+        this.load.spritesheet('circle_parts_white', 'assets/circle_parts_white.png', { frameWidth: 250, frameHeight: 250 });
+        this.load.spritesheet('dots', 'assets/dots.png', { frameWidth: 36, frameHeight: 36 });
     }
 
     function create ()
@@ -51,51 +60,77 @@
         group = this.add.group();    
         
         tempCircle = new Phaser.Geom.Circle(400, 200, 110);
-        //var graphics = this.add.graphics({ lineStyle: { color: 0xff0000 } });
+        var graphics = this.add.graphics({ fillStyle: { color: yellowColor } });
         //graphics.strokeCircleShape(tempCircle);
         //circle = group.create(400, 100, 'circle');   
 
-        //group.create(tempCircle.x + tempCircle.radius + 10, 200, 'dot');        
-        circle = this.physics.add.staticImage(400, 200, 'circle');
-        dot = this.physics.add.image(400, 500, 'dot');
+        //group.create(tempCircle.x + tempCircle.radius + 10, 200, 'dot');  
 
+        //this.physics.add.staticImage(400, 200, 'circle_bg');
         
+        circle = this.physics.add.staticImage(400, 200, 'circle');
+        circlePartWhite1 = this.physics.add.staticImage(400, 200, 'circle_parts_white', 0);
+        circlePartWhite2 = this.physics.add.staticImage(400, 200, 'circle_parts_white', 0);
+        circlePartWhite2.flipY = !circlePartWhite2.flipY;
+        circlePartWhite1.name = 'yellowColor';
+        circlePartWhite2.name = 'blackColor';
+        //graphics.fillCircleShape(circlePartWhite1);
+        circlePartWhite1.setTint(0xFBC40F);
+        circlePartWhite2.setTint(0x414c56);
+
+         
+       // circleShine = this.physics.add.staticImage(400, 200, 'circle_shine');
+       
+
+        dot = this.physics.add.image(400, 500, 'dots', dotColor).setInteractive();        
         dot.body.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true);
         //group.create(tempCircle.x + tempCircle.radius + 10, 200, 'dot');   
-        //  Input Events
-        cursors = this.input.keyboard.createCursorKeys();
-
-            
 
         //colliders        
-        this.physics.add.collider(dot, circle, null, collisionHandler, this);
+        this.physics.add.collider(dot, [circlePartWhite2, circlePartWhite1], null, collisionHandler1, this);
+        //this.physics.add.collider(dot, circlePartWhite1, null, collisionHandler1, this);
+        //this.physics.add.collider(dot, circlePartWhite2, null, collisionHandler1, this);
+        
     }
 
     function update ()
     {
-       circle.rotation += 0.01;
-       this.physics.world.collide(dot, [ circle ]);
-       //arrow.rotation += 0.02;
-       Phaser.Actions.RotateAround(group.getChildren(), { x: 400, y: 200 }, 0.01);
+        circle.rotation += rotationSpeed;
+        circlePartWhite1.rotation += rotationSpeed;    
+        circlePartWhite2.rotation += rotationSpeed;
+        Phaser.Actions.RotateAround(group.getChildren(), { x: 400, y: 200 }, rotationSpeed);
 
-       if (cursors.up.isDown)
-        {
-            dot.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true).setGravityY(-600);
-        }
+        dot.on('pointerup', function (pointer) {
+
+            this.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true).setGravityY(-800);
+
+        });
+
+
 
         if(arrowHit) {  
-            group.create(tempCircle.x , tempCircle.y + tempCircle.radius, 'dot'); 
-            dot = this.physics.add.image(400, 500, 'dot');
+            group.create(tempCircle.x , tempCircle.y + tempCircle.radius, 'dots', dotColor); 
+            dotColor = Phaser.Math.RND.between(0,1);
+            dot = this.physics.add.image(400, 500, 'dots', dotColor).setInteractive();            
             dot.body.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true);
-            this.physics.add.collider(dot, circle, null, collisionHandler, this);
+            this.physics.add.collider(dot, [circlePartWhite2, circlePartWhite1], null, collisionHandler1, this);
+            //this.physics.add.collider(dot, circlePartWhite1, null, collisionHandler1, this);
+            //this.physics.add.collider(dot, circlePartWhite2, null, collisionHandler1, this);
             arrowHit=false;  
         }
     }
 
 
-    function collisionHandler(dot, tempCircle) {
-       dot.destroy();
-       arrowHit = true
+    function collisionHandler1(dot, circleCollied) {
+        console.log('hit yellowColor', circleCollied.name);
+        dot.destroy();
+        arrowHit = true;
+    }
+
+    function collisionHandler2(dot, circle) {
+        console.log('hit blackColor');
+        dot.destroy();
+        arrowHit = true;
     }
 
     
