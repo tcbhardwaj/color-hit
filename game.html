@@ -1,0 +1,160 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>color hit</title>
+    <script src="phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyDulsyenSSxKBVMSvQRDe4UXsuDq5S6d9c",
+    authDomain: "color-hit.firebaseapp.com",
+    databaseURL: "https://color-hit.firebaseio.com",
+    projectId: "color-hit",
+    storageBucket: "color-hit.appspot.com",
+    messagingSenderId: "256313144973"
+  };
+  firebase.initializeApp(config);
+</script>
+
+<script type="text/javascript">
+
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 800,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 0, x:0 },
+                debug: false
+            }
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+    
+    let game = new Phaser.Game(config);
+    let circle;
+    //let circleShine;
+    let dot;
+    let group;   
+    let dotHit =  false;
+    let tempCircle;
+    let circlePartWhite1;
+    var circlePartWhite2;
+    let rotationSpeed = 0.015;
+    let gameOver = false;
+    let score = 0;
+    let scoreText;
+
+    let dotColor = Phaser.Math.RND.between(1,2);
+    let yellowColor = Phaser.Display.Color.ValueToColor('rgb(250, 196, 15)');
+
+    function preload ()
+    {        
+        this.load.image('circle', 'assets/circle.png');
+        //this.load.image('background', 'assets/background.png');
+        this.load.image('circle_shine', 'assets/circle_shine.png'); 
+        this.load.image('half_circle', 'assets/half_circle.png');  
+        this.load.image('game_over', 'assets/game_over.png');        
+        this.load.spritesheet('dots', 'assets/dots.png', { frameWidth: 36, frameHeight: 36 });
+    }
+
+    function create ()
+    {    
+        //this.add.image(400, 400, 'background');
+        group = this.physics.add.group();    
+        
+        tempCircle = new Phaser.Geom.Circle(400, 200, 110);
+        var graphics = this.add.graphics({ fillStyle: { color: yellowColor } });        
+        
+        circle = this.physics.add.staticImage(400, 200, 'circle');
+        circlePartWhite1 = group.create(400, 145, 'half_circle');
+        circlePartWhite2 = group.create(400, 260, 'half_circle');
+        circlePartWhite2.flipY = !circlePartWhite2.flipY;
+        circlePartWhite1.name = '1'; //yellow frame
+        circlePartWhite2.name = '2'; // green fram
+        //graphics.fillCircleShape(circlePartWhite1);
+        circlePartWhite1.setTint(0xFBC40F); //yellow color
+        circlePartWhite2.setTint(0x8bc427); // green color
+       
+
+        dot = this.physics.add.image(400, 600, 'dots', dotColor).setInteractive();        
+        dot.body.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true);        
+
+        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#00ff12' });
+
+        //overlapping      
+        this.physics.add.overlap(dot, group, null, collisionHandler, this);        
+        
+    }
+
+    function update ()
+    {        
+        circlePartWhite1.rotation += rotationSpeed;
+        circlePartWhite2.rotation += rotationSpeed;
+        Phaser.Actions.RotateAround(group.getChildren(), { x: 400, y: 200 }, rotationSpeed);
+
+        dot.on('pointerup', function (pointer) {
+
+            this.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true).setGravityY(-500);
+
+        });
+
+
+
+        if(dotHit) {  
+            group.create(tempCircle.x , tempCircle.y + tempCircle.radius, 'dots', dotColor); 
+            dotColor = Phaser.Math.RND.between(1,2);
+            dot = this.physics.add.image(400, 600, 'dots', dotColor).setInteractive();            
+            dot.body.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true);
+            this.physics.add.overlap(dot, [circlePartWhite2, circlePartWhite1], null, collisionHandler, this);             
+            dotHit=false;  
+        }
+
+        if(gameOver){
+            gameOverHandler();
+            gameOver = false
+            this.add.image(400, 500, 'game_over');
+        }
+    }
+
+
+    function collisionHandler(dot, circle) {
+        console.log('circle', circle.name);
+        console.log('dot', dot.frame.name); 
+        dot.destroy();
+        dotHit = true;       
+        if(circle.name != dot.frame.name){
+             gameOver = true;
+        } else {
+            score += 10;
+            scoreText.setText('Score: ' + score);
+            rotationSpeed += 0.001;
+
+        }     
+    }  
+
+    function gameOverHandler() {
+        console.log('game over'); 
+        rotationSpeed = 0; 
+        dot.destroy();  
+    } 
+    
+</script>
+
+</body>
+</html>
