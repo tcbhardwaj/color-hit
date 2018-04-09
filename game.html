@@ -27,11 +27,12 @@
 </script>
 
 <script type="text/javascript">
-
+    var width = window.innerWidth * window.devicePixelRatio;
+    var height = window.innerHeight * window.devicePixelRatio;
     var config = {
         type: Phaser.AUTO,
-        width: 800,
-        height: 800,
+        width: window.innerWidth * window.devicePixelRatio,
+        height: window.innerHeight * window.devicePixelRatio,
         physics: {
             default: 'arcade',
             arcade: {
@@ -43,7 +44,8 @@
             preload: preload,
             create: create,
             update: update
-        }
+        },
+        backgroundColor : '#4488AA'
     };
     
     let game = new Phaser.Game(config);
@@ -55,7 +57,7 @@
     let tempCircle;
     let circlePartWhite1;
     var circlePartWhite2;
-    let rotationSpeed = 0.015;
+    let rotationSpeed = 0.02;
     let gameOver = false;
     let score = 0;
     let scoreText;
@@ -66,7 +68,7 @@
     function preload ()
     {        
         this.load.image('circle', 'assets/circle.png');
-        //this.load.image('background', 'assets/background.png');
+        this.load.image('background', 'assets/background.png');
         this.load.image('circle_shine', 'assets/circle_shine.png'); 
         this.load.image('half_circle', 'assets/half_circle.png');  
         this.load.image('game_over', 'assets/game_over.png');        
@@ -75,15 +77,15 @@
 
     function create ()
     {    
-        //this.add.image(400, 400, 'background');
+        //screen mode
+        this.add.image(width/2, height/2, 'background').setScale(window.devicePixelRatio);
         group = this.physics.add.group();    
-        
-        tempCircle = new Phaser.Geom.Circle(400, 200, 110);
+        tempCircle = new Phaser.Geom.Circle(width/2, 200, 130);
         var graphics = this.add.graphics({ fillStyle: { color: yellowColor } });        
         
-        circle = this.physics.add.staticImage(400, 200, 'circle');
-        circlePartWhite1 = group.create(400, 145, 'half_circle');
-        circlePartWhite2 = group.create(400, 260, 'half_circle');
+        circle = this.physics.add.staticImage(width/2, 200, 'circle').setScale(1.17);
+        circlePartWhite1 = group.create(width/2+2, 135, 'half_circle').setScale(1.2);
+        circlePartWhite2 = group.create(width/2+2, 267, 'half_circle').setScale(1.2);
         circlePartWhite2.flipY = !circlePartWhite2.flipY;
         circlePartWhite1.name = '1'; //yellow frame
         circlePartWhite2.name = '2'; // green fram
@@ -92,13 +94,13 @@
         circlePartWhite2.setTint(0x8bc427); // green color
        
 
-        dot = this.physics.add.image(400, 600, 'dots', dotColor).setInteractive();        
+        dot = this.physics.add.image(width/2, 600, 'dots', dotColor).setInteractive().setScale(1.2);        
         dot.body.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true);        
 
-        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#00ff12' });
+        scoreText = this.add.text(16, 16, 'score: 0', { fontType: 'arial', fontSize: '32px', fill: '#00ff12' });
 
         //overlapping      
-        this.physics.add.overlap(dot, group, null, collisionHandler, this);        
+        //this.physics.add.overlap(dot, group, null, collisionHandler, this);        
         
     }
 
@@ -106,29 +108,29 @@
     {        
         circlePartWhite1.rotation += rotationSpeed;
         circlePartWhite2.rotation += rotationSpeed;
-        Phaser.Actions.RotateAround(group.getChildren(), { x: 400, y: 200 }, rotationSpeed);
-
+        Phaser.Actions.RotateAround(group.getChildren(), { x: width/2, y: 200 }, rotationSpeed);
+        this.physics.add.overlap(dot, [circlePartWhite1, circlePartWhite2], null, collisionHandler, this);
         dot.on('pointerup', function (pointer) {
 
-            this.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true).setGravityY(-500);
+            this.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true).setGravityY(-5000);
 
         });
 
 
 
         if(dotHit) {  
-            group.create(tempCircle.x , tempCircle.y + tempCircle.radius, 'dots', dotColor); 
+            group.create(tempCircle.x , tempCircle.y + tempCircle.radius, 'dots', dotColor).setScale(1.2); 
             dotColor = Phaser.Math.RND.between(1,2);
-            dot = this.physics.add.image(400, 600, 'dots', dotColor).setInteractive();            
+            dot = this.physics.add.image(width/2, 600, 'dots', dotColor).setInteractive().setScale(1.2);            
             dot.body.setVelocity(0, 0).setBounce(0, 0).setCollideWorldBounds(true);
-            this.physics.add.overlap(dot, [circlePartWhite2, circlePartWhite1], null, collisionHandler, this);             
+                         
             dotHit=false;  
         }
 
         if(gameOver){
             gameOverHandler();
             gameOver = false
-            this.add.image(400, 500, 'game_over');
+            this.add.image(width/2, 500, 'game_over');
         }
     }
 
@@ -143,7 +145,7 @@
         } else {
             score += 10;
             scoreText.setText('Score: ' + score);
-            rotationSpeed += 0.001;
+            rotationSpeed += 0.005;
 
         }     
     }  
