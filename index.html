@@ -5,13 +5,14 @@
     <title>color hit</title>
     <script src="phaser.min.js"></script>
     <style type="text/css">
-        body {
+       /* body {
             margin: 0 auto;
-        }
+        }*/
     </style>
 </head>
 <body>
-
+<div id="color-game" style="width: 100%; margin: 0 auto;">
+</div>
 <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
 <script>
   // Initialize Firebase
@@ -27,12 +28,13 @@
 </script>
 
 <script type="text/javascript">
-    var width = window.innerWidth * window.devicePixelRatio;
-    var height = window.innerHeight * window.devicePixelRatio;
+    var width = window.innerWidth/window.devicePixelRatio;
+    var height = window.innerHeight/window.devicePixelRatio;
     var config = {
         type: Phaser.AUTO,
         width: width,
         height: height,
+        parent: 'color-game',
         physics: {
             default: 'arcade',
             arcade: {
@@ -46,7 +48,7 @@
             update: update
         },
         backgroundColor : '#1256fd',
-        frames: 100
+        fps: 100
     };
     
     let game = new Phaser.Game(config);
@@ -80,6 +82,7 @@
     {    
         //screen mode
         //this.add.image(width/2, height/2, 'background');
+        
         group = this.physics.add.group();    
         tempCircle = new Phaser.Geom.Circle(width/2, 200, 110);
         var graphics = this.add.graphics({ fillStyle: { color: yellowColor } });        
