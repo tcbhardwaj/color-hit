@@ -64,6 +64,7 @@
     let gameOver = false;
     let score = 0;
     let scoreText;
+    let refreshButton;
 
     let dotColor = Phaser.Math.RND.between(1,2);
     let yellowColor = Phaser.Display.Color.ValueToColor('rgb(250, 196, 15)');
@@ -71,7 +72,7 @@
     function preload ()
     {        
         this.load.image('circle', 'assets/circle.png');
-        //this.load.image('background', 'assets/background.png');
+        this.load.image('refresh_button', 'assets/refresh_button.png');
         this.load.image('circle_shine', 'assets/circle_shine.png'); 
         this.load.image('half_circle', 'assets/half_circle.png');  
         this.load.image('game_over', 'assets/game_over.png');        
@@ -135,6 +136,8 @@
             gameOverHandler();
             gameOver = false
             this.add.image(width/2, 500, 'game_over');
+            refreshButton = this.physics.add.image(width/2, 400, 'refresh_button').setInteractive().setScale(0.20);
+            reloadGame();
         }
     }
 
@@ -159,6 +162,12 @@
         rotationSpeed = 0; 
         dot.destroy();  
     } 
+
+    function reloadGame() {        
+        refreshButton.on('pointerup', function (pointer) {
+            location.reload();
+        });
+    }
     
 </script>
 
